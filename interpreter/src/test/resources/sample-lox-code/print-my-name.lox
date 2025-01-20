@@ -1,0 +1,13 @@
+func create_my_greeting(name) {
+    if (name){
+        return "hello theree!! my name is " + name;
+    }
+    else {
+        return "helloo stranger, what you are doing today ;)";
+    }
+}
+
+var name = "hddt";
+
+// This should print a friendly greeting
+create_my_greeting(name);

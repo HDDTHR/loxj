@@ -1,0 +1,48 @@
+package io.hddthr.model;
+
+public enum TokenType {
+  LEFT_PAREN,
+  RIGHT_PAREN,
+  LEFT_BRACE,
+  RIGHT_BRACE,
+  DOT,
+  PLUS,
+  DASH,
+  STAR,
+  SLASH,
+  COMMA,
+  SEMICOLON,
+
+  EQUAL,
+  EQUAL_EQUAL,
+  GREATER,
+  GREATER_EQUAL,
+  LESS,
+  LESS_EQUAL,
+  BANG,
+  BANG_EQUAL,
+
+  IDENTIFIER,
+  STRING,
+  NUMBER,
+
+  AND,
+  OR,
+  VAR,
+  NEW,
+  CLASS,
+  FUNC,
+  IF,
+  FOR,
+  WHILE,
+  RETURN,
+  SUPER,
+  PRINT,
+  TRUE,
+  FALSE,
+  NIL,
+  ELSE,
+  THIS,
+
+  EOF
+}

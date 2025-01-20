@@ -1,0 +1,9 @@
+func get_pow(var num, var pow) {
+    var result = 1;
+    for(var idx = 0; idx < pow; idx++){
+        result = result * num;
+    }
+    return result;
+}
+
+print get_pow(4,3);

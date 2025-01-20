@@ -1,0 +1,45 @@
+class Character {
+    init(name, initial_health, attack_damage){
+        this.name = name;
+        this.health = initial_health;
+        this.attack_damage = attack_damage;
+    }
+
+    is_dead(){
+        return health <= 0;
+    }
+
+    damage(amount){
+        if(is_dead()){
+            this.health = health - amount;
+        }
+    }
+
+    attack(other_character) {
+        other_character.damage(this.attack_damage);
+    }
+}
+
+class Hero < Character {
+    init(){
+        super.init("Hero", 100, 20);
+    }
+}
+
+class Goblin < Character {
+    init(){
+        super.init("Goblin", 40, 15);
+    }
+}
+
+
+var player = new Hero();
+var enemy = new Goblin();
+
+while(!player.is_dead() and !enemy.is_dead()){
+    player.attack(enemy);
+    enemy.attack(player);
+}
+
+print "Player alive: " + player.is_dead();
+print "Enemy alive: " + enemy.is_dead();

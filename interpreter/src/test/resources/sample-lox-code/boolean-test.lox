@@ -1,0 +1,7 @@
+var variable1 = true;
+var variable2 = false;
+
+print !variable1;
+print variable1 and variable2;
+print variable1 or variable2;
+print nil == nil;

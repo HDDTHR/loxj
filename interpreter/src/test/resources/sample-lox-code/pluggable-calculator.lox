@@ -1,0 +1,15 @@
+func calculate(n1, n2, operation) {
+    func log() {
+        print "Performing the operation!";
+    }
+
+    log();
+    return operation(n1, n2);
+}
+
+func addition(n1, n2) {
+    return n1 + n2;
+}
+
+var num = calculate(5, 2, addition);
+print num;
