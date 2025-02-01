@@ -1,5 +1,7 @@
 package io.hddthr.model;
 
+import io.hddthr.visitor.Visitor;
+
 public abstract class Expr {
 #foreach($expr in $expressions)
     public static class $expr.name() extends Expr {
@@ -7,7 +9,7 @@ public abstract class Expr {
         private final $field;
 #end
 
-        public $expr.name()($StringUtils.join($expr.fields(), ", "){
+        public $expr.name()($StringUtils.join($expr.fields(), ", ")){
 #foreach($field in $expr.fields())
             this.$field.split(" ")[1] = $field.split(" ")[1];
 #end
@@ -15,7 +17,7 @@ public abstract class Expr {
 
         @Override
         <R> R accept(Visitor<R> visitor){
-            return visitor.visit(this);
+            return visitor.visit$expr.name()Expr(this);
         }
     }
 #end

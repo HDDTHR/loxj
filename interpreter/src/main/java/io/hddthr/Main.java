@@ -12,8 +12,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import io.hddthr.model.Expr;
-
 public class Main {
   public static void main(String[] args) {
     Options options = new Options();

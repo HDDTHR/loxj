@@ -1,7 +1,9 @@
 package io.hddthr.visitor;
 
-interface Visitor<R> {
+import io.hddthr.model.Expr;
+
+public interface Visitor<R> {
 #foreach($expr in $expressions)
-    R visit$expr.name()Expr($expr.name() expr);
+    R visit$expr.name()Expr(Expr.$expr.name() expr);
 #end
 }
