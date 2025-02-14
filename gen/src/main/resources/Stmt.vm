@@ -3,18 +3,18 @@ package io.hddthr.model;
 import lombok.RequiredArgsConstructor;
 import io.hddthr.visitor.Visitor;
 
-public abstract class Expr {
+public abstract class Stmt {
 
-#foreach($expr in $expressions)
+#foreach($stmt in $statements)
   @RequiredArgsConstructor
-  public static class $expr.name() extends Expr {
-#foreach($field in $expr.fields())
+  public static class $stmt.name() extends Stmt {
+#foreach($field in $stmt.fields())
     public final $field;
 #end
 
     @Override
     public <R> R accept(Visitor<R> visitor){
-      return visitor.visit$expr.name()Expr(this);
+      return visitor.visit$stmt.name()Stmt(this);
     }
   }
 #end

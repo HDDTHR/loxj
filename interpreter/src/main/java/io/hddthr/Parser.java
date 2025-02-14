@@ -12,6 +12,7 @@ import static io.hddthr.model.TokenType.TRUE;
 import io.hddthr.model.Expr;
 import io.hddthr.model.Expr.Binary;
 import io.hddthr.model.ParsingError;
+import io.hddthr.model.Stmt;
 import io.hddthr.model.Token;
 import io.hddthr.model.TokenType;
 import io.hddthr.reader.TokenReader;
@@ -22,13 +23,42 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class Parser {
 
+  private List<Stmt> statements;
   private TokenReader reader;
   private List<ParsingError> errors;
 
-  public Expr parse(List<Token> tokens) {
+  public List<Stmt> parse(List<Token> tokens) {
     reader = new TokenReader(tokens);
+    statements = new ArrayList<>();
     errors = new ArrayList<>();
-    return expression();
+
+    while (!reader.isAtEnd()) {
+      statements.add(statement());
+    }
+    return statements;
+  }
+
+  private Stmt statement() {
+    if (reader.match(TokenType.PRINT)) {
+      return printStatement();
+    }
+    return expressionStatement();
+  }
+
+  private Stmt expressionStatement() {
+    Expr value = expression();
+    if (!reader.match(SEMICOLON)) {
+      reportError("Expect ';' after value.");
+    }
+    return new Stmt.Expression(value);
+  }
+
+  private Stmt printStatement() {
+    Expr value = expression();
+    if (!reader.match(SEMICOLON)) {
+      reportError("Expect ';' after value.");
+    }
+    return new Stmt.Print(value);
   }
 
   private Expr expression() {
@@ -108,7 +138,6 @@ public class Parser {
       return new Expr.Grouping(expr);
     }
     reportError("Expect expression.");
-    synchronize();
     return null;
   }
 
@@ -137,6 +166,7 @@ public class Parser {
 
   private void reportError(String s) {
     errors.add(new ParsingError(reader.getCurrent(), s));
+    synchronize();
   }
 }
 

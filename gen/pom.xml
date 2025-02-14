@@ -44,10 +44,11 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>io.hddthr.generator.ExprGenerator</mainClass>
+                    <mainClass>io.hddthr.generator.CodeGenerator</mainClass>
                     <classpathScope>compile</classpathScope>
                     <arguments>
-                        <argument>${project.basedir}/../gen.txt</argument>
+                        <argument>${project.basedir}/../expr.txt</argument>
+                        <argument>${project.basedir}/../stmt.txt</argument>
                         <argument>${project.build.directory}/generated-sources/</argument>
                     </arguments>
                 </configuration>

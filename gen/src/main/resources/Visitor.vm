@@ -1,9 +1,14 @@
-package io.hddthr.generated.visitor;
+package io.hddthr.visitor;
 
-import io.hddthr.generated.model.Expr;
+import io.hddthr.model.Stmt;
+import io.hddthr.model.Expr;
 
 public interface Visitor<R> {
 #foreach($expr in $expressions)
-    R visit$expr.name()Expr(Expr.$expr.name() expr);
+  R visit$expr.name()Expr(Expr.$expr.name() expr);
+#end
+
+#foreach($stmt in $statements)
+  R visit$stmt.name()Stmt(Stmt.$stmt.name() stmt);
 #end
 }

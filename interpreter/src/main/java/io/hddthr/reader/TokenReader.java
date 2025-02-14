@@ -37,7 +37,7 @@ public class TokenReader {
   }
 
   public boolean isAtEnd() {
-    return index >= tokens.size();
+    return index + 1 >= tokens.size();
   }
 
   public Token peek(int idx) {

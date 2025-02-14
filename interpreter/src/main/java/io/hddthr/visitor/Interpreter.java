@@ -7,20 +7,20 @@ import io.hddthr.model.Expr.Binary;
 import io.hddthr.model.Expr.Grouping;
 import io.hddthr.model.Expr.Literal;
 import io.hddthr.model.Expr.Unary;
+import io.hddthr.model.Stmt;
+import io.hddthr.model.Stmt.Expression;
+import io.hddthr.model.Stmt.Print;
 import java.util.Arrays;
+import java.util.List;
 
 public class Interpreter implements Visitor<Object> {
 
-  public Object interpret(Expr expr) {
+  public void interpret(List<Stmt> statements) {
     try {
-      return evaluate(expr);
+      statements.forEach(stmt -> stmt.accept(this));
     } catch (RuntimeException e) {
       throw new RuntimeException(e.getMessage());
     }
-  }
-
-  private Object evaluate(Expr expr) {
-    return expr.accept(this);
   }
 
   @Override
@@ -68,6 +68,26 @@ public class Interpreter implements Visitor<Object> {
     return null;
   }
 
+  private Object evaluate(Expr expr) {
+    return expr.accept(this);
+  }
+
+  private void assertNumber(Object... objs) {
+    if (!Arrays.stream(objs).allMatch(o -> o instanceof Double)) {
+      throw new RuntimeException("Operands must be numbers.");
+    }
+  }
+
+  private Object isEqual(Object left, Object right) {
+    if (isNull(left) && isNull(right)) {
+      return true;
+    }
+    if (isNull(left)) {
+      return false;
+    }
+    return left.equals(right);
+  }
+
   @Override
   public Object visitGroupingExpr(Grouping expr) {
     return evaluate(expr.expression);
@@ -91,6 +111,25 @@ public class Interpreter implements Visitor<Object> {
     };
   }
 
+  @Override
+  public Object visitExpressionStmt(Expression stmt) {
+    return evaluate(stmt.expression);
+  }
+
+  @Override
+  public Object visitPrintStmt(Print stmt) {
+    Object value = evaluate(stmt.expression);
+    System.out.println(stringify(value));
+    return null;
+  }
+
+  private String stringify(Object value) {
+    if (value == null) {
+      return "nil";
+    }
+    return value.toString();
+  }
+
   private boolean isTruthy(Object right) {
     if (right == null) {
       return false;
@@ -99,21 +138,5 @@ public class Interpreter implements Visitor<Object> {
       return (boolean) right;
     }
     return true;
-  }
-
-  private void assertNumber(Object... objs) {
-    if (!Arrays.stream(objs).allMatch(o -> o instanceof Double)) {
-      throw new RuntimeException("Operands must be numbers.");
-    }
-  }
-
-  private Object isEqual(Object left, Object right) {
-    if (isNull(left) && isNull(right)) {
-      return true;
-    }
-    if (isNull(left)) {
-      return false;
-    }
-    return left.equals(right);
   }
 }

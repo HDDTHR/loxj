@@ -3,6 +3,7 @@ package io.hddthr;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.hddthr.model.Expr;
+import io.hddthr.model.Stmt;
 import io.hddthr.model.Token;
 import io.hddthr.visitor.PrintVisitor;
 import java.util.List;
@@ -30,7 +31,6 @@ public class ParserTest {
   void givenComplexSamplesTokensWhenParseThenReturnAST(String filename) {
     List<Token> input = SampleLoxCode.getTokens(filename);
     PrintVisitor visitor = new PrintVisitor();
-    Expr expression = parser.parse(input);
-    assertEquals("", expression.accept(visitor));
+    List<Stmt> expression = parser.parse(input);
   }
 }

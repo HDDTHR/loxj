@@ -1,6 +1,8 @@
 package io.hddthr.visitor;
 
 import io.hddthr.model.Expr;
+import io.hddthr.model.Stmt.Expression;
+import io.hddthr.model.Stmt.Print;
 import io.hddthr.model.Token;
 import io.hddthr.model.TokenType;
 
@@ -37,5 +39,15 @@ public class PrintVisitor implements Visitor<String> {
   @Override
   public String visitUnaryExpr(Expr.Unary expr) {
     return expr.operator.getLexeme() + expr.right.accept(this);
+  }
+
+  @Override
+  public String visitExpressionStmt(Expression stmt) {
+    return stmt.expression.accept(this);
+  }
+
+  @Override
+  public String visitPrintStmt(Print stmt) {
+    return "print: " + stmt.expression.accept(this);
   }
 }
