@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class Token {
+
   private final TokenType type;
   private final int line;
   private String lexeme;

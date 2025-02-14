@@ -1,4 +1,4 @@
-package io.hddthr;
+package io.hddthr.generator;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,8 +25,8 @@ public class ExprGenerator {
     context = initContext(args[0]);
 
     try {
-      generateExpressionJavaFile(Path.of(args[1], "model"), "Expr.java");
-      generateVisitorJavaFile(Path.of(args[1], "visitor"), "Visitor.java");
+      generateExpressionJavaFile(Path.of(args[1],  "model"), "Expr.java");
+      generateVisitorJavaFile(Path.of(args[1],   "visitor"), "Visitor.java");
     } catch (IOException e) {
       System.err.printf("Generation Exception: %s%n", e.getMessage());
       throw new RuntimeException(e);

@@ -1,12 +1,12 @@
-package io.hddthr.model;
+package io.hddthr.generated.model;
 
-import io.hddthr.visitor.Visitor;
+import io.hddthr.generated.visitor.Visitor;
 
 public abstract class Expr {
 #foreach($expr in $expressions)
     public static class $expr.name() extends Expr {
 #foreach($field in $expr.fields())
-        private final $field;
+        public final $field;
 #end
 
         public $expr.name()($StringUtils.join($expr.fields(), ", ")){
@@ -16,11 +16,11 @@ public abstract class Expr {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor){
+        public <R> R accept(Visitor<R> visitor){
             return visitor.visit$expr.name()Expr(this);
         }
     }
 #end
 
-    abstract <R> R accept(Visitor<R> visitor);
+    public abstract <R> R accept(Visitor<R> visitor);
 }

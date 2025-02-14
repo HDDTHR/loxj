@@ -1,5 +1,8 @@
 package io.hddthr;
 
+import io.hddthr.model.Token;
+import io.hddthr.model.TokenType;
+import io.hddthr.reader.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,10 +10,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import io.hddthr.model.Token;
-import io.hddthr.model.TokenType;
-
 public class Tokenizer {
+
   private final Map<String, TokenType> keywords = new HashMap<>() {{
     put("and", TokenType.AND);
     put("or", TokenType.OR);
@@ -31,14 +32,16 @@ public class Tokenizer {
     put("new", TokenType.NEW);
   }};
   private List<Token> tokens;
-  private Reader reader;
+  private StringReader reader;
 
   public List<Token> tokenize(String code) {
-    if (Objects.isNull(code)) return List.of(new Token(TokenType.EOF, 1));
-    reader = new Reader(code);
+    if (Objects.isNull(code)) {
+      return List.of(new Token(TokenType.EOF, 1));
+    }
+    reader = new StringReader(code);
     tokens = new ArrayList<>();
     while (!reader.reachedEOF()) {
-      reader.resetStartPosition();
+      reader.setStartingPosition();
       getNextToken();
       reader.advance();
     }
@@ -48,7 +51,7 @@ public class Tokenizer {
 
   @SuppressWarnings("t")
   private void getNextToken() {
-    char c = reader.getCurrentCharacter();
+    char c = reader.getCurrent();
     switch (c) {
       case '(':
         addToken(TokenType.LEFT_PAREN);
@@ -66,7 +69,7 @@ public class Tokenizer {
         addToken(TokenType.DOT);
         break;
       case '-':
-        addToken(TokenType.DASH);
+        addToken(TokenType.MINUS);
         break;
       case '+':
         addToken(TokenType.PLUS);
@@ -81,36 +84,44 @@ public class Tokenizer {
         addToken(TokenType.STAR);
         break;
       case '=':
-        if (reader.nextMatches('=')) {
-          reader.advance();
+        if (reader.match('=')) {
           addToken(TokenType.EQUAL_EQUAL);
-        } else addToken(TokenType.EQUAL);
+        } else {
+          addToken(TokenType.EQUAL);
+        }
         break;
       case '!':
-        if (reader.nextMatches('=')) {
-          reader.advance();
+        if (reader.match('=')) {
           addToken(TokenType.BANG_EQUAL);
-        } else addToken(TokenType.BANG);
+        } else {
+          addToken(TokenType.BANG);
+        }
         break;
       case '<':
-        if (reader.nextMatches('=')) {
-          reader.advance();
+        if (reader.match('=')) {
           addToken(TokenType.LESS_EQUAL);
-        } else addToken(TokenType.LESS);
+        } else {
+          addToken(TokenType.LESS);
+        }
         break;
       case '>':
-        if (reader.nextMatches('=')) {
-          reader.advance();
+        if (reader.match('=')) {
           addToken(TokenType.GREATER_EQUAL);
-        } else addToken(TokenType.GREATER);
+        } else {
+          addToken(TokenType.GREATER);
+        }
         break;
       case '"':
         addStringToken();
         break;
       case '/':
-        if (reader.nextMatches('/')) {
-          while (!reader.reachedEOF() && reader.peek(1) != '\n') reader.advance();
-        } else addToken(TokenType.SLASH);
+        if (reader.match('/')) {
+          while (!reader.reachedEOF() && reader.peek(1) != '\n') {
+            reader.advance();
+          }
+        } else {
+          addToken(TokenType.SLASH);
+        }
         break;
       case '\n':
         reader.addLine();
@@ -120,11 +131,15 @@ public class Tokenizer {
       case '\r':
         break;
       default:
-        if (isDigit(c)) addNumberToken();
-        else if (isAlpha(c)) addKeywordToken();
-        else throw new IllegalArgumentException(
+        if (isDigit(c)) {
+          addNumberToken();
+        } else if (isAlpha(c)) {
+          addKeywordToken();
+        } else {
+          throw new IllegalArgumentException(
               String.format("Illegal character at line %d, character %d", reader.getLine(),
                   reader.getIndexRelativeToLine()));
+        }
     }
   }
 
@@ -135,14 +150,21 @@ public class Tokenizer {
   private void addStringToken() {
     reader.advance();
     while (!reader.reachedEOF()) {
-      char currentChar = reader.getCurrentCharacter();
-      if (currentChar == '"') break;
-      if (currentChar == '\n') throw getUnterminatedStringException();
+      char currentChar = reader.getCurrent();
+      if (currentChar == '"') {
+        break;
+      }
+      if (currentChar == '\n') {
+        throw getUnterminatedStringException();
+      }
       reader.advance();
     }
-    if (reader.reachedEOF()) throw getUnterminatedStringException();
+    if (reader.reachedEOF()) {
+      throw getUnterminatedStringException();
+    }
     String text = reader.getSubstringToIndex();
-    tokens.add(new Token(TokenType.STRING, reader.getLine(), text, text.substring(1, text.length() - 1)));
+    tokens.add(new Token(TokenType.STRING, reader.getLine(), text,
+        text.substring(1, text.length() - 1)));
   }
 
   private boolean isDigit(char c) {
@@ -150,10 +172,16 @@ public class Tokenizer {
   }
 
   private void addNumberToken() {
-    if (reader.peekBack() == '.') throw getInvalidNumberException();
-    while (isDigit(reader.peek(1))) reader.advance();
+    if (reader.peekBack(1) == '.') {
+      throw getInvalidNumberException();
+    }
+    while (isDigit(reader.peek(1))) {
+      reader.advance();
+    }
     if (reader.peek(1) == '.' && isDigit(reader.peek(2))) {
-      do reader.advance(); while (isDigit(reader.peek(1)));
+      do {
+        reader.advance();
+      } while (isDigit(reader.peek(1)));
     }
     checkInvalidPostfix();
     String text = reader.getSubstringToIndex();
@@ -165,25 +193,31 @@ public class Tokenizer {
   }
 
   private void addKeywordToken() {
-    while (isAlphaNumeric(reader.peek(1))) reader.advance();
+    while (isAlphaNumeric(reader.peek(1))) {
+      reader.advance();
+    }
     String text = reader.getSubstringToIndex();
     Optional.ofNullable(keywords.get(text)).ifPresentOrElse(this::addToken,
         () -> tokens.add(new Token(TokenType.IDENTIFIER, reader.getLine(), text, null)));
   }
 
   private IllegalArgumentException getUnterminatedStringException() {
-    return new IllegalArgumentException(String.format("Unterminated string at line %d, character %d", reader.getLine(),
-        reader.getStartIndexRelativeToLine()));
+    return new IllegalArgumentException(
+        String.format("Unterminated string at line %d, character %d", reader.getLine(),
+            reader.getStartIndexRelativeToLine()));
   }
 
   private IllegalArgumentException getInvalidNumberException() {
-    return new IllegalArgumentException(String.format("Invalid number at line %d, character %d", reader.getLine(),
-        reader.getStartIndexRelativeToLine()));
+    return new IllegalArgumentException(
+        String.format("Invalid number at line %d, character %d", reader.getLine(),
+            reader.getStartIndexRelativeToLine()));
   }
 
   private void checkInvalidPostfix() {
     char nextChar = reader.peek(1);
-    if (!isOperator(nextChar) && !";), \0".contains(String.valueOf(nextChar))) throw getInvalidNumberException();
+    if (!isOperator(nextChar) && !";), \0".contains(String.valueOf(nextChar))) {
+      throw getInvalidNumberException();
+    }
   }
 
   private boolean isAlphaNumeric(char c) {

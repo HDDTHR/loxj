@@ -10,10 +10,10 @@ parenthesis primary
 
 ```
 expression ->  equality
-equality   ->  comparison ( ("==","!=") comparison )* ;
-comparison ->  term       ( (">","<","<=",">=") term )* ;
-term       ->  factor     ( ("-","+") factor )* ; 
-factor     ->  unary      ( ("*","/") unary )* ; 
-unary      ->  ("!","-") unary | primary ;
+equality   ->  comparison ( ("==","!=") comparison )*
+comparison ->  term       ( (">","<","<=",">=") term )*
+term       ->  factor     ( ("-","+") factor )* 
+factor     ->  unary      ( ("*","/") unary )* 
+unary      ->  ("!","-") unary | primary
 primary    -> "nil" | NUMBER | STRING | "true" | "false" | "(" expression ")"
 ```

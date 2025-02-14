@@ -27,4 +27,31 @@
             <version>2.0</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>run-generator</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>io.hddthr.generator.ExprGenerator</mainClass>
+                    <classpathScope>compile</classpathScope>
+                    <arguments>
+                        <argument>${project.basedir}/../gen.txt</argument>
+                        <argument>${project.build.directory}/generated-sources/</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -7,7 +7,7 @@ public enum TokenType {
   RIGHT_BRACE,
   DOT,
   PLUS,
-  DASH,
+  MINUS,
   STAR,
   SLASH,
   COMMA,
