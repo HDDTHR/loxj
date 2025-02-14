@@ -1,4 +1,4 @@
-package io.hddthr.reader;
+package io.hddthr.visitor;
 
 import static java.util.Objects.isNull;
 
@@ -7,7 +7,6 @@ import io.hddthr.model.Expr.Binary;
 import io.hddthr.model.Expr.Grouping;
 import io.hddthr.model.Expr.Literal;
 import io.hddthr.model.Expr.Unary;
-import io.hddthr.visitor.Visitor;
 import java.util.Arrays;
 
 public class Interpreter implements Visitor<Object> {
