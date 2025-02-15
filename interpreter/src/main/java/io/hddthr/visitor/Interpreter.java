@@ -9,12 +9,16 @@ import io.hddthr.model.Expr.Assign;
 import io.hddthr.model.Expr.Binary;
 import io.hddthr.model.Expr.Grouping;
 import io.hddthr.model.Expr.Literal;
+import io.hddthr.model.Expr.Logical;
 import io.hddthr.model.Expr.Unary;
 import io.hddthr.model.Expr.Variable;
+import io.hddthr.model.Stmt;
 import io.hddthr.model.Stmt.Block;
 import io.hddthr.model.Stmt.Expression;
+import io.hddthr.model.Stmt.If;
 import io.hddthr.model.Stmt.Print;
 import io.hddthr.model.Stmt.Var;
+import io.hddthr.model.TokenType;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,20 +79,13 @@ public class Interpreter implements Visitor<Object> {
     return null;
   }
 
-  private void assertNumber(Object... objs) {
-    if (!Arrays.stream(objs).allMatch(o -> o instanceof Double)) {
-      throw new InterpreterException("Operands must be numbers.");
-    }
-  }
-
-  private Object isEqual(Object left, Object right) {
-    if (isNull(left) && isNull(right)) {
+  @Override
+  public Object visitLogicalExpr(Logical expr) {
+    boolean left = isTruthy(evaluate(expr.left));
+    if (left && expr.operator.getType().equals(TokenType.OR)) {
       return true;
     }
-    if (isNull(left)) {
-      return false;
-    }
-    return left.equals(right);
+    return evaluate(expr.right);
   }
 
   @Override
@@ -142,6 +139,16 @@ public class Interpreter implements Visitor<Object> {
   }
 
   @Override
+  public Object visitIfStmt(If stmt) {
+    if (isTruthy(evaluate(stmt.condition))) {
+      evaluate(stmt.thenBranch);
+    } else if (stmt.elseBranch != null) {
+      evaluate(stmt.elseBranch);
+    }
+    return null;
+  }
+
+  @Override
   public Object visitBlockStmt(Block stmt) {
     Environment previous = this.environment;
     this.environment = new Environment(previous);
@@ -151,6 +158,10 @@ public class Interpreter implements Visitor<Object> {
       this.environment = previous;
     }
     return null;
+  }
+
+  private void evaluate(Stmt stmt) {
+    stmt.accept(this);
   }
 
   private String stringify(Object value) {
@@ -168,6 +179,22 @@ public class Interpreter implements Visitor<Object> {
       return (boolean) right;
     }
     return true;
+  }
+
+  private void assertNumber(Object... objs) {
+    if (!Arrays.stream(objs).allMatch(o -> o instanceof Double)) {
+      throw new InterpreterException("Operands must be numbers.");
+    }
+  }
+
+  private Object isEqual(Object left, Object right) {
+    if (isNull(left) && isNull(right)) {
+      return true;
+    }
+    if (isNull(left)) {
+      return false;
+    }
+    return left.equals(right);
   }
 
   private Object evaluate(Expr expr) {

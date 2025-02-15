@@ -1,10 +1,12 @@
 package io.hddthr;
 
+import static io.hddthr.model.TokenType.AND;
 import static io.hddthr.model.TokenType.EQUAL;
 import static io.hddthr.model.TokenType.FALSE;
 import static io.hddthr.model.TokenType.LEFT_PAREN;
 import static io.hddthr.model.TokenType.NIL;
 import static io.hddthr.model.TokenType.NUMBER;
+import static io.hddthr.model.TokenType.OR;
 import static io.hddthr.model.TokenType.RIGHT_BRACE;
 import static io.hddthr.model.TokenType.RIGHT_PAREN;
 import static io.hddthr.model.TokenType.SEMICOLON;
@@ -76,10 +78,25 @@ public class Parser {
     if (reader.match(TokenType.PRINT)) {
       return printStatement();
     }
+    if (reader.match(TokenType.IF)) {
+      return ifStatement();
+    }
     if (reader.match(TokenType.LEFT_BRACE)) {
       return new Stmt.Block(block());
     }
     return expressionStatement();
+  }
+
+  private Stmt ifStatement() {
+    consume(LEFT_PAREN, "Expect '(' after if statement.");
+    Expr condition = expression();
+    consume(RIGHT_PAREN, "Expect ')' after if statement.");
+    Stmt thenBranch = statement();
+    Stmt elseBranch = null;
+    if (reader.match(TokenType.ELSE)) {
+      elseBranch = statement();
+    }
+    return new Stmt.If(condition, thenBranch, elseBranch);
   }
 
   private List<Stmt> block() {
@@ -110,7 +127,7 @@ public class Parser {
   }
 
   private Expr assignment() {
-    Expr expr = equality();
+    Expr expr = or();
     if (reader.match(EQUAL)) {
       Token equals = reader.previous();
       Expr value = assignment();
@@ -119,6 +136,26 @@ public class Parser {
         return new Expr.Assign(name, value);
       }
       reportError(equals, "Invalid assignment target.");
+    }
+    return expr;
+  }
+
+  private Expr or() {
+    Expr expr = and();
+    if (reader.match(AND)) {
+      Token operator = reader.previous();
+      Expr right = and();
+      expr = new Expr.Logical(expr, operator, right);
+    }
+    return expr;
+  }
+
+  private Expr and() {
+    Expr expr = equality();
+    if (reader.match(OR)) {
+      Token operator = reader.previous();
+      Expr right = equality();
+      expr = new Expr.Logical(expr, operator, right);
     }
     return expr;
   }

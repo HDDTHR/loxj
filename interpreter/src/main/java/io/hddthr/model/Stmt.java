@@ -35,6 +35,17 @@ public abstract class Stmt {
     }
   }
   @RequiredArgsConstructor
+  public static class If extends Stmt {
+    public final Expr condition;
+    public final Stmt thenBranch;
+    public final Stmt elseBranch;
+
+    @Override
+    public <R> R accept(Visitor<R> visitor){
+      return visitor.visitIfStmt(this);
+    }
+  }
+  @RequiredArgsConstructor
   public static class Block extends Stmt {
     public final List<Stmt> statements;
 

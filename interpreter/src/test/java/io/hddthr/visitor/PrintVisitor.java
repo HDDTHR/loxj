@@ -5,6 +5,7 @@ import io.hddthr.model.Expr.Assign;
 import io.hddthr.model.Expr.Variable;
 import io.hddthr.model.Stmt.Block;
 import io.hddthr.model.Stmt.Expression;
+import io.hddthr.model.Stmt.If;
 import io.hddthr.model.Stmt.Print;
 import io.hddthr.model.Stmt.Var;
 import io.hddthr.model.Token;
@@ -65,6 +66,13 @@ public class PrintVisitor implements Visitor<String> {
   @Override
   public String visitVarStmt(Var stmt) {
     return parenthesise(stmt.name.getLexeme() + " = " + stmt.initializer.accept(this));
+  }
+
+  @Override
+  public String visitIfStmt(If stmt) {
+    return parenthesise(
+        "if " + stmt.condition.accept(this) + " then " + stmt.thenBranch.accept(this) + " else "
+            + stmt.elseBranch.accept(this));
   }
 
   @Override

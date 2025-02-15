@@ -27,6 +27,17 @@ public abstract class Expr {
     }
   }
   @RequiredArgsConstructor
+  public static class Logical extends Expr {
+    public final Expr left;
+    public final Token operator;
+    public final Expr right;
+
+    @Override
+    public <R> R accept(Visitor<R> visitor){
+      return visitor.visitLogicalExpr(this);
+    }
+  }
+  @RequiredArgsConstructor
   public static class Grouping extends Expr {
     public final Expr expression;
 

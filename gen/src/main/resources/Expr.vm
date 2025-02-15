@@ -1,6 +1,5 @@
 package io.hddthr.model;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import io.hddthr.visitor.Visitor;
 

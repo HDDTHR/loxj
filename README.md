@@ -1,13 +1,3 @@
-Order of precedence bottom to top
-```
-== !=
-> < => =<
-+ -
-* /
-(unary) + -
-parenthesis primary
-```
-
 ```
 program        → decleration* EOF 
 decleration    → varDecl
@@ -15,14 +5,20 @@ decleration    → varDecl
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" 
 statement      → exprStmt
                | printStmt
+               | ifStmt
                | block
+
+ifStmt         → "if" "(" expression ")" statement
+               ( "else" statement )? ;
 block          → "{" declaration* "}"
 exprStmt       → expression ";"
 printStmt      → "print" expression ";"
 
 expression     → assignment
 assignment     → IDENTIFIER "=" assignment
-               | equality
+               | logic_or ;
+logic_or       → logic_and ( "or" logic_and )* ;
+logic_and      → equality ( "and" equality )* ; 
 equality   ->  comparison ( ("==","!=") comparison )*
 comparison ->  term       ( (">","<","<=",">=") term )*
 term       ->  factor     ( ("-","+") factor )* 
