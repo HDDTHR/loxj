@@ -22,7 +22,7 @@ public class StringReader {
   }
 
   public char peekBack(int idx) {
-    if (index - idx > 0) {
+    if (index - idx < 0) {
       return '\0';
     }
     return input.charAt(index - idx);

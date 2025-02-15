@@ -1,5 +1,6 @@
 package io.hddthr;
 
+import io.hddthr.exception.TokenizerException;
 import io.hddthr.model.Token;
 import io.hddthr.model.TokenType;
 import io.hddthr.reader.StringReader;
@@ -136,7 +137,7 @@ public class Tokenizer {
         } else if (isAlpha(c)) {
           addKeywordToken();
         } else {
-          throw new IllegalArgumentException(
+          throw new TokenizerException(
               String.format("Illegal character at line %d, character %d", reader.getLine(),
                   reader.getIndexRelativeToLine()));
         }
@@ -163,8 +164,8 @@ public class Tokenizer {
       throw getUnterminatedStringException();
     }
     String text = reader.getSubstringToIndex();
-    tokens.add(new Token(TokenType.STRING, reader.getLine(), text,
-        text.substring(1, text.length() - 1)));
+    tokens.add(
+        new Token(TokenType.STRING, reader.getLine(), text, text.substring(1, text.length() - 1)));
   }
 
   private boolean isDigit(char c) {
@@ -201,14 +202,14 @@ public class Tokenizer {
         () -> tokens.add(new Token(TokenType.IDENTIFIER, reader.getLine(), text, null)));
   }
 
-  private IllegalArgumentException getUnterminatedStringException() {
-    return new IllegalArgumentException(
+  private TokenizerException getUnterminatedStringException() {
+    return new TokenizerException(
         String.format("Unterminated string at line %d, character %d", reader.getLine(),
             reader.getStartIndexRelativeToLine()));
   }
 
-  private IllegalArgumentException getInvalidNumberException() {
-    return new IllegalArgumentException(
+  private TokenizerException getInvalidNumberException() {
+    return new TokenizerException(
         String.format("Invalid number at line %d, character %d", reader.getLine(),
             reader.getStartIndexRelativeToLine()));
   }
@@ -227,4 +228,5 @@ public class Tokenizer {
   private boolean isOperator(char c) {
     return "+-/*<=>=!=".contains(Character.toString(c));
   }
+
 }

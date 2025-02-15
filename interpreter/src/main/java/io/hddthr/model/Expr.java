@@ -44,6 +44,15 @@ public abstract class Expr {
       return visitor.visitUnaryExpr(this);
     }
   }
+  @RequiredArgsConstructor
+  public static class Variable extends Expr {
+    public final Token name;
+
+    @Override
+    public <R> R accept(Visitor<R> visitor){
+      return visitor.visitVariableExpr(this);
+    }
+  }
 
   public abstract <R> R accept(Visitor<R> visitor);
 }

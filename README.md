@@ -9,7 +9,10 @@ parenthesis primary
 ```
 
 ```
-program        → statement* EOF ;
+program        → decleration* EOF ;
+decleration    → varDecl
+               | statement ;
+varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ; 
 statement      → exprStmt
                | printStmt ;
 exprStmt       → expression ";" ;
@@ -21,5 +24,12 @@ comparison ->  term       ( (">","<","<=",">=") term )*
 term       ->  factor     ( ("-","+") factor )* 
 factor     ->  unary      ( ("*","/") unary )* 
 unary      ->  ("!","-") unary | primary
-primary    -> "nil" | NUMBER | STRING | "true" | "false" | "(" expression ")"
+primary    -> "nil" |
+              IDENTIFIER
+              | NUMBER
+              | IDENTIFIER
+              | STRING
+              | "true"
+              | "false"
+              | "(" expression ")"
 ```

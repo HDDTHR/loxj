@@ -1,5 +1,9 @@
 package io.hddthr;
 
+import io.hddthr.exception.InterpreterException;
+import io.hddthr.exception.ParserException;
+import io.hddthr.exception.TokenizerException;
+import io.hddthr.model.ParsingError;
 import io.hddthr.model.Stmt;
 import io.hddthr.model.Token;
 import io.hddthr.visitor.Interpreter;
@@ -10,6 +14,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.IntStream;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -45,13 +50,24 @@ public class Main {
     InputStreamReader input = new InputStreamReader(System.in);
     BufferedReader reader = new BufferedReader(input);
 
-    for (; ; ) {
+    while (true) {
       System.out.print("> ");
       String line = reader.readLine();
       if (line == null) {
         break;
       }
-      run(line);
+      try {
+        run(line);
+      } catch (TokenizerException | InterpreterException e) {
+        System.err.format("%s: %s\n", e.getClass().getSimpleName(), e.getMessage());
+      } catch (ParserException e) {
+        List<ParsingError> errors = e.getErrors();
+        System.err.format("Parser errors:%s", IntStream.range(1, errors.size() + 1).mapToObj(i -> {
+          ParsingError error = errors.get(i - 1);
+          return String.format("%d: line %d, lexeme \"%s\",  %s\n", i, error.token().getLine(),
+              error.token().getLexeme(), error.message());
+        }).reduce("", (a, b) -> a + "\n" + b));
+      }
     }
   }
 

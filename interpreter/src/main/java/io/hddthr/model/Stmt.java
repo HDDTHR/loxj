@@ -1,32 +1,38 @@
 package io.hddthr.model;
 
+import lombok.RequiredArgsConstructor;
 import io.hddthr.visitor.Visitor;
 
 public abstract class Stmt {
-    public static class Expression extends Stmt {
-        public final Expr expression;
 
-        public Expression(Expr expression){
-            this.expression = expression;
-        }
+  @RequiredArgsConstructor
+  public static class Expression extends Stmt {
+    public final Expr expression;
 
-        @Override
-        public <R> R accept(Visitor<R> visitor){
-            return visitor.visitExpressionStmt(this);
-        }
+    @Override
+    public <R> R accept(Visitor<R> visitor){
+      return visitor.visitExpressionStmt(this);
     }
-    public static class Print extends Stmt {
-        public final Expr expression;
+  }
+  @RequiredArgsConstructor
+  public static class Print extends Stmt {
+    public final Expr expression;
 
-        public Print(Expr expression){
-            this.expression = expression;
-        }
-
-        @Override
-        public <R> R accept(Visitor<R> visitor){
-            return visitor.visitPrintStmt(this);
-        }
+    @Override
+    public <R> R accept(Visitor<R> visitor){
+      return visitor.visitPrintStmt(this);
     }
+  }
+  @RequiredArgsConstructor
+  public static class Var extends Stmt {
+    public final Token name;
+    public final Expr initializer;
 
-    public abstract <R> R accept(Visitor<R> visitor);
+    @Override
+    public <R> R accept(Visitor<R> visitor){
+      return visitor.visitVarStmt(this);
+    }
+  }
+
+  public abstract <R> R accept(Visitor<R> visitor);
 }

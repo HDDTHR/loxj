@@ -9,6 +9,7 @@ import static io.hddthr.model.TokenType.SEMICOLON;
 import static io.hddthr.model.TokenType.STRING;
 import static io.hddthr.model.TokenType.TRUE;
 
+import io.hddthr.exception.ParserException;
 import io.hddthr.model.Expr;
 import io.hddthr.model.Expr.Binary;
 import io.hddthr.model.ParsingError;
@@ -23,19 +24,49 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class Parser {
 
-  private List<Stmt> statements;
   private TokenReader reader;
   private List<ParsingError> errors;
 
   public List<Stmt> parse(List<Token> tokens) {
     reader = new TokenReader(tokens);
-    statements = new ArrayList<>();
     errors = new ArrayList<>();
 
+    List<Stmt> statements = new ArrayList<>();
     while (!reader.isAtEnd()) {
-      statements.add(statement());
+      statements.add(declaration());
     }
+    if(!errors.isEmpty())
+      throw new ParserException(errors);
     return statements;
+  }
+
+  private Stmt declaration() {
+    try {
+      if (reader.match(TokenType.VAR)) {
+        return varDeclaration();
+      }
+      return statement();
+    } catch (RuntimeException e) {
+      synchronize();
+      return null;
+    }
+  }
+
+  private Stmt varDeclaration() {
+    Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+    Expr initializer = null;
+    if (reader.match(TokenType.EQUAL)) {
+      initializer = expression();
+    }
+    consume(SEMICOLON, "Expect ';' after variable declaration.");
+    return new Stmt.Var(name, initializer);
+  }
+
+  private Token consume(TokenType identifier, String s) {
+    if (!reader.match(identifier)) {
+      reportError(s);
+    }
+    return reader.previous();
   }
 
   private Stmt statement() {
@@ -47,17 +78,13 @@ public class Parser {
 
   private Stmt expressionStatement() {
     Expr value = expression();
-    if (!reader.match(SEMICOLON)) {
-      reportError("Expect ';' after value.");
-    }
+    consume(SEMICOLON, "Expect ';' after value.");
     return new Stmt.Expression(value);
   }
 
   private Stmt printStatement() {
     Expr value = expression();
-    if (!reader.match(SEMICOLON)) {
-      reportError("Expect ';' after value.");
-    }
+    consume(SEMICOLON, "Expect ';' after value.");
     return new Stmt.Print(value);
   }
 
@@ -130,11 +157,13 @@ public class Parser {
       return new Expr.Literal(reader.previous().getLiteral());
     }
 
+    if (reader.match(TokenType.IDENTIFIER)) {
+      return new Expr.Variable(reader.previous());
+    }
+
     if (reader.match(LEFT_PAREN)) {
       Expr expr = expression();
-      if (!reader.match(RIGHT_PAREN)) {
-        reportError("Expect ')' after expression.");
-      }
+      consume(RIGHT_PAREN, "Expect ')' after expression.");
       return new Expr.Grouping(expr);
     }
     reportError("Expect expression.");
@@ -165,8 +194,9 @@ public class Parser {
   }
 
   private void reportError(String s) {
-    errors.add(new ParsingError(reader.getCurrent(), s));
-    synchronize();
+    errors.add(new ParsingError(reader.previous(), s));
+    throw new RuntimeException();
   }
+
 }
 

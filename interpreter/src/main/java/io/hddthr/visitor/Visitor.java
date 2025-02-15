@@ -8,7 +8,9 @@ public interface Visitor<R> {
   R visitGroupingExpr(Expr.Grouping expr);
   R visitLiteralExpr(Expr.Literal expr);
   R visitUnaryExpr(Expr.Unary expr);
+  R visitVariableExpr(Expr.Variable expr);
 
   R visitExpressionStmt(Stmt.Expression stmt);
   R visitPrintStmt(Stmt.Print stmt);
+  R visitVarStmt(Stmt.Var stmt);
 }

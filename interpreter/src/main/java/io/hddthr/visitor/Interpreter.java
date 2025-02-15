@@ -2,26 +2,23 @@ package io.hddthr.visitor;
 
 import static java.util.Objects.isNull;
 
+import io.hddthr.exception.InterpreterException;
 import io.hddthr.model.Expr;
 import io.hddthr.model.Expr.Binary;
 import io.hddthr.model.Expr.Grouping;
 import io.hddthr.model.Expr.Literal;
 import io.hddthr.model.Expr.Unary;
-import io.hddthr.model.Stmt;
+import io.hddthr.model.Expr.Variable;
 import io.hddthr.model.Stmt.Expression;
 import io.hddthr.model.Stmt.Print;
+import io.hddthr.model.Stmt.Var;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Interpreter implements Visitor<Object> {
 
-  public void interpret(List<Stmt> statements) {
-    try {
-      statements.forEach(stmt -> stmt.accept(this));
-    } catch (RuntimeException e) {
-      throw new RuntimeException(e.getMessage());
-    }
-  }
+  private final Environment environment = new Environment();
 
   @Override
   public Object visitBinaryExpr(Binary expr) {
@@ -38,11 +35,11 @@ public class Interpreter implements Visitor<Object> {
         if (left instanceof String l && right instanceof String r) {
           return l.concat(r);
         }
-        throw new RuntimeException("Operands must be two numbers or two strings.");
+        throw new InterpreterException("Operands must be two numbers or two strings.");
       case SLASH:
         assertNumber(left, right);
         if (right.equals(0.0)) {
-          throw new RuntimeException("Division by zero.");
+          throw new InterpreterException("Division by zero.");
         }
         return (double) left / (double) right;
       case STAR:
@@ -74,7 +71,7 @@ public class Interpreter implements Visitor<Object> {
 
   private void assertNumber(Object... objs) {
     if (!Arrays.stream(objs).allMatch(o -> o instanceof Double)) {
-      throw new RuntimeException("Operands must be numbers.");
+      throw new InterpreterException("Operands must be numbers.");
     }
   }
 
@@ -112,6 +109,11 @@ public class Interpreter implements Visitor<Object> {
   }
 
   @Override
+  public Object visitVariableExpr(Variable expr) {
+    return environment.get(expr.name.getLexeme());
+  }
+
+  @Override
   public Object visitExpressionStmt(Expression stmt) {
     return evaluate(stmt.expression);
   }
@@ -120,6 +122,16 @@ public class Interpreter implements Visitor<Object> {
   public Object visitPrintStmt(Print stmt) {
     Object value = evaluate(stmt.expression);
     System.out.println(stringify(value));
+    return null;
+  }
+
+  @Override
+  public Object visitVarStmt(Var stmt) {
+    Object value = null;
+    if (stmt.initializer != null) {
+      value = evaluate(stmt.initializer);
+    }
+    environment.define(stmt.name.getLexeme(), value);
     return null;
   }
 
@@ -139,4 +151,30 @@ public class Interpreter implements Visitor<Object> {
     }
     return true;
   }
+
+  static class Environment {
+
+    private final Map<String, Object> map = new HashMap<>();
+
+    public void define(String name, Object value) {
+      map.put(name, value);
+    }
+
+    public void assign(String name, Object value) {
+      if (map.containsKey(name)) {
+        map.put(name, value);
+        return;
+      }
+      throw new InterpreterException("Undefined variable '" + name + "'.");
+    }
+
+    public Object get(String name) {
+      if (map.containsKey(name)) {
+        return map.get(name);
+      }
+      throw new InterpreterException("Undefined variable '" + name + "'.");
+    }
+
+  }
+
 }
