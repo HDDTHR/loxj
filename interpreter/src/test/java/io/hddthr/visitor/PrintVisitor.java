@@ -3,11 +3,13 @@ package io.hddthr.visitor;
 import io.hddthr.model.Expr;
 import io.hddthr.model.Expr.Assign;
 import io.hddthr.model.Expr.Variable;
+import io.hddthr.model.Stmt.Block;
 import io.hddthr.model.Stmt.Expression;
 import io.hddthr.model.Stmt.Print;
 import io.hddthr.model.Stmt.Var;
 import io.hddthr.model.Token;
 import io.hddthr.model.TokenType;
+import java.util.stream.Collectors;
 
 public class PrintVisitor implements Visitor<String> {
 
@@ -63,6 +65,12 @@ public class PrintVisitor implements Visitor<String> {
   @Override
   public String visitVarStmt(Var stmt) {
     return parenthesise(stmt.name.getLexeme() + " = " + stmt.initializer.accept(this));
+  }
+
+  @Override
+  public String visitBlockStmt(Block stmt) {
+    return "block {" + stmt.statements.stream().map(s -> s.accept(this))
+        .collect(Collectors.joining("")) + "}";
   }
 
   private String parenthesise(String str) {
