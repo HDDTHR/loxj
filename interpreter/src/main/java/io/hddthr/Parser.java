@@ -12,6 +12,9 @@ import static io.hddthr.model.TokenType.RIGHT_PAREN;
 import static io.hddthr.model.TokenType.SEMICOLON;
 import static io.hddthr.model.TokenType.STRING;
 import static io.hddthr.model.TokenType.TRUE;
+import static io.hddthr.model.TokenType.VAR;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import io.hddthr.exception.ParserException;
 import io.hddthr.model.Expr;
@@ -22,6 +25,7 @@ import io.hddthr.model.Token;
 import io.hddthr.model.TokenType;
 import io.hddthr.reader.TokenReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -78,6 +82,12 @@ public class Parser {
     if (reader.match(TokenType.PRINT)) {
       return printStatement();
     }
+    if (reader.match(TokenType.WHILE)) {
+      return whileStmt();
+    }
+    if (reader.match(TokenType.FOR)) {
+      return forStmt();
+    }
     if (reader.match(TokenType.IF)) {
       return ifStatement();
     }
@@ -85,6 +95,48 @@ public class Parser {
       return new Stmt.Block(block());
     }
     return expressionStatement();
+  }
+
+  private Stmt forStmt() {
+    consume(LEFT_PAREN, "Expect '(' after for statement.");
+    Stmt initializer;
+    if (reader.match(SEMICOLON)) {
+      initializer = null;
+    } else if (reader.match(VAR)) {
+      initializer = varDeclaration();
+    } else {
+      initializer = expressionStatement();
+    }
+    Expr condition = null;
+    if (!reader.getCurrent().getType().equals(SEMICOLON)) {
+      condition = expression();
+    }
+    consume(SEMICOLON, "Expect ';' after loop condition.");
+    Expr increment = null;
+    if (!reader.getCurrent().getType().equals(RIGHT_PAREN)) {
+      increment = expression();
+    }
+    consume(RIGHT_PAREN, "Expect ')' after loop increment.");
+    Stmt body = statement();
+    if (nonNull(increment)) {
+      body = new Stmt.Block(Arrays.asList(body, new Stmt.Expression(increment)));
+    }
+    if (isNull(condition)) {
+      condition = new Expr.Literal(true);
+    }
+    body = new Stmt.While(condition, body);
+    if (nonNull(initializer)) {
+      body = new Stmt.Block(Arrays.asList(initializer, body));
+    }
+    return body;
+  }
+
+  private Stmt whileStmt() {
+    consume(LEFT_PAREN, "Expect '(' after while statement.");
+    Expr condition = expression();
+    consume(RIGHT_PAREN, "Expect ')' after while condition.");
+    Stmt stmt = new Stmt.Block(block());
+    return new Stmt.While(condition, stmt);
   }
 
   private Stmt ifStatement() {

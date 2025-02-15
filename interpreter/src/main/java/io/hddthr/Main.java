@@ -72,7 +72,7 @@ public class Main {
       System.out.format(formatErrorText("Parser errors:%s\n"),
           IntStream.range(1, errors.size() + 1).mapToObj(i -> {
             ParsingError error = errors.get(i - 1);
-            return String.format("%d: line %d, lexeme \"%s\",  %s", i, error.token().getLine(),
+            return String.format("line %d, lexeme \"%s\",  %s", error.token().getLine(),
                 error.token().getLexeme(), error.message());
           }).reduce("", (a, b) -> a + "\n" + b));
     }

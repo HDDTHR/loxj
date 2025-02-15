@@ -5,9 +5,12 @@ decleration    → varDecl
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" 
 statement      → exprStmt
                | printStmt
+               | whileStmt
+               | forStmt
                | ifStmt
                | block
-
+whileStmt      → "while" "(" expression ")" statement
+forStmt        → "for" "(" ( varDecl | exprStmt | ";") expression? ";" espression? ")" statement
 ifStmt         → "if" "(" expression ")" statement
                ( "else" statement )? ;
 block          → "{" declaration* "}"

@@ -18,6 +18,7 @@ import io.hddthr.model.Stmt.Expression;
 import io.hddthr.model.Stmt.If;
 import io.hddthr.model.Stmt.Print;
 import io.hddthr.model.Stmt.Var;
+import io.hddthr.model.Stmt.While;
 import io.hddthr.model.TokenType;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -139,6 +140,14 @@ public class Interpreter implements Visitor<Object> {
   }
 
   @Override
+  public Object visitWhileStmt(While stmt) {
+    while (isTruthy(evaluate(stmt.condition))) {
+      evaluate(stmt.statement);
+    }
+    return null;
+  }
+
+  @Override
   public Object visitIfStmt(If stmt) {
     if (isTruthy(evaluate(stmt.condition))) {
       evaluate(stmt.thenBranch);
@@ -167,6 +176,9 @@ public class Interpreter implements Visitor<Object> {
   private String stringify(Object value) {
     if (value == null) {
       return "nil";
+    }
+    if (value instanceof Double num && num.toString().endsWith(".0")) {
+      return num.toString().substring(0, num.toString().length() - 2);
     }
     return value.toString();
   }

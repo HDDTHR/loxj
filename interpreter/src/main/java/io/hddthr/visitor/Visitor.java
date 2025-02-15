@@ -15,6 +15,7 @@ public interface Visitor<R> {
   R visitExpressionStmt(Stmt.Expression stmt);
   R visitPrintStmt(Stmt.Print stmt);
   R visitVarStmt(Stmt.Var stmt);
+  R visitWhileStmt(Stmt.While stmt);
   R visitIfStmt(Stmt.If stmt);
   R visitBlockStmt(Stmt.Block stmt);
 }

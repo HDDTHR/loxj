@@ -35,6 +35,16 @@ public abstract class Stmt {
     }
   }
   @RequiredArgsConstructor
+  public static class While extends Stmt {
+    public final Expr condition;
+    public final Stmt statement;
+
+    @Override
+    public <R> R accept(Visitor<R> visitor){
+      return visitor.visitWhileStmt(this);
+    }
+  }
+  @RequiredArgsConstructor
   public static class If extends Stmt {
     public final Expr condition;
     public final Stmt thenBranch;
