@@ -76,7 +76,7 @@ public class Parser {
     if (reader.match(TokenType.PRINT)) {
       return printStatement();
     }
-    if (reader.match(TokenType.RIGHT_BRACE)) {
+    if (reader.match(TokenType.LEFT_BRACE)) {
       return new Stmt.Block(block());
     }
     return expressionStatement();
@@ -84,10 +84,12 @@ public class Parser {
 
   private List<Stmt> block() {
     List<Stmt> statements = new ArrayList<>();
-    while(!reader.match(TokenType.RIGHT_BRACE) && !reader.isAtEnd()) {
+    while (!reader.match(TokenType.RIGHT_BRACE) && !reader.isAtEnd()) {
       statements.add(declaration());
     }
-    consume(RIGHT_BRACE, "Expect '}' after block.");
+    if (reader.previous().getType() != RIGHT_BRACE) {
+      reportError(reader.previous(), "Expect '}' after block.");
+    }
     return statements;
   }
 

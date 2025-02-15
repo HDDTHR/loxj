@@ -56,27 +56,26 @@ public class Main {
       if (line == null) {
         break;
       }
-      try {
-        run(line);
-      } catch (TokenizerException | InterpreterException e) {
-        System.out.format(formatErrorText("%s:\n%s\n"), e.getClass().getSimpleName(),
-            e.getMessage());
-      } catch (ParserException e) {
-        List<ParsingError> errors = e.getErrors();
-        System.out.format(formatErrorText("Parser errors:%s"),
-            IntStream.range(1, errors.size() + 1).mapToObj(i -> {
-              ParsingError error = errors.get(i - 1);
-              return String.format("%d: line %d, lexeme \"%s\",  %s\n", i, error.token().getLine(),
-                  error.token().getLexeme(), error.message());
-            }).reduce("", (a, b) -> a + "\n" + b));
-      }
+      run(line);
     }
   }
 
   private static void run(String source) {
-    List<Token> tokens = tokenizer.tokenize(source);
-    List<Stmt> statements = parser.parse(tokens);
-    statements.forEach(stmt -> stmt.accept(interpreter));
+    try {
+      List<Token> tokens = tokenizer.tokenize(source);
+      List<Stmt> statements = parser.parse(tokens);
+      statements.forEach(stmt -> stmt.accept(interpreter));
+    } catch (TokenizerException | InterpreterException e) {
+      System.out.format(formatErrorText("%s:\n%s\n"), e.getClass().getSimpleName(), e.getMessage());
+    } catch (ParserException e) {
+      List<ParsingError> errors = e.getErrors();
+      System.out.format(formatErrorText("Parser errors:%s"),
+          IntStream.range(1, errors.size() + 1).mapToObj(i -> {
+            ParsingError error = errors.get(i - 1);
+            return String.format("%d: line %d, lexeme \"%s\",  %s", i, error.token().getLine(),
+                error.token().getLexeme(), error.message());
+          }).reduce("", (a, b) -> a + "\n" + b));
+    }
   }
 
   private static String getFileContent(String filename) {
