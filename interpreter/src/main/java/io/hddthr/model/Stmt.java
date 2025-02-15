@@ -1,5 +1,6 @@
 package io.hddthr.model;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import io.hddthr.visitor.Visitor;
 
@@ -31,6 +32,15 @@ public abstract class Stmt {
     @Override
     public <R> R accept(Visitor<R> visitor){
       return visitor.visitVarStmt(this);
+    }
+  }
+  @RequiredArgsConstructor
+  public static class Block extends Stmt {
+    public final List<Stmt> statements;
+
+    @Override
+    public <R> R accept(Visitor<R> visitor){
+      return visitor.visitBlockStmt(this);
     }
   }
 

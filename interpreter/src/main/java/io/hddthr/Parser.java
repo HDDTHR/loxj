@@ -1,9 +1,11 @@
 package io.hddthr;
 
+import static io.hddthr.model.TokenType.EQUAL;
 import static io.hddthr.model.TokenType.FALSE;
 import static io.hddthr.model.TokenType.LEFT_PAREN;
 import static io.hddthr.model.TokenType.NIL;
 import static io.hddthr.model.TokenType.NUMBER;
+import static io.hddthr.model.TokenType.RIGHT_BRACE;
 import static io.hddthr.model.TokenType.RIGHT_PAREN;
 import static io.hddthr.model.TokenType.SEMICOLON;
 import static io.hddthr.model.TokenType.STRING;
@@ -35,8 +37,9 @@ public class Parser {
     while (!reader.isAtEnd()) {
       statements.add(declaration());
     }
-    if(!errors.isEmpty())
+    if (!errors.isEmpty()) {
       throw new ParserException(errors);
+    }
     return statements;
   }
 
@@ -64,7 +67,7 @@ public class Parser {
 
   private Token consume(TokenType identifier, String s) {
     if (!reader.match(identifier)) {
-      reportError(s);
+      reportError(reader.previous(), s);
     }
     return reader.previous();
   }
@@ -73,7 +76,19 @@ public class Parser {
     if (reader.match(TokenType.PRINT)) {
       return printStatement();
     }
+    if (reader.match(TokenType.RIGHT_BRACE)) {
+      return new Stmt.Block(block());
+    }
     return expressionStatement();
+  }
+
+  private List<Stmt> block() {
+    List<Stmt> statements = new ArrayList<>();
+    while(!reader.match(TokenType.RIGHT_BRACE) && !reader.isAtEnd()) {
+      statements.add(declaration());
+    }
+    consume(RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
   }
 
   private Stmt expressionStatement() {
@@ -89,7 +104,21 @@ public class Parser {
   }
 
   private Expr expression() {
-    return equality();
+    return assignment();
+  }
+
+  private Expr assignment() {
+    Expr expr = equality();
+    if (reader.match(EQUAL)) {
+      Token equals = reader.previous();
+      Expr value = assignment();
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable) expr).name;
+        return new Expr.Assign(name, value);
+      }
+      reportError(equals, "Invalid assignment target.");
+    }
+    return expr;
   }
 
   private Expr equality() {
@@ -166,7 +195,7 @@ public class Parser {
       consume(RIGHT_PAREN, "Expect ')' after expression.");
       return new Expr.Grouping(expr);
     }
-    reportError("Expect expression.");
+    reportError(reader.previous(), "Expect expression.");
     return null;
   }
 
@@ -193,8 +222,8 @@ public class Parser {
     }
   }
 
-  private void reportError(String s) {
-    errors.add(new ParsingError(reader.previous(), s));
+  private void reportError(Token token, String reason) {
+    errors.add(new ParsingError(reader.previous(), reason));
     throw new RuntimeException();
   }
 

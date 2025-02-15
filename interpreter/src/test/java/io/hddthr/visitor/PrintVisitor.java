@@ -1,6 +1,7 @@
 package io.hddthr.visitor;
 
 import io.hddthr.model.Expr;
+import io.hddthr.model.Expr.Assign;
 import io.hddthr.model.Expr.Variable;
 import io.hddthr.model.Stmt.Expression;
 import io.hddthr.model.Stmt.Print;
@@ -19,18 +20,19 @@ public class PrintVisitor implements Visitor<String> {
   }
 
   @Override
+  public String visitAssignExpr(Assign expr) {
+    return parenthesise("assign " + expr.name.getLexeme() + " = " + expr.value.accept(this));
+  }
+
+  @Override
   public String visitBinaryExpr(Expr.Binary expr) {
     return parenthesise(
         expr.left.accept(this) + expr.operator.getLexeme() + expr.right.accept(this));
   }
 
-  private String parenthesise(String str) {
-    return " " + str + " ";
-  }
-
   @Override
   public String visitGroupingExpr(Expr.Grouping expr) {
-    return " (" + expr.expression.accept(this) + ") ";
+    return parenthesise(expr.expression.accept(this));
   }
 
   @Override
@@ -40,26 +42,30 @@ public class PrintVisitor implements Visitor<String> {
 
   @Override
   public String visitUnaryExpr(Expr.Unary expr) {
-    return expr.operator.getLexeme() + expr.right.accept(this);
+    return parenthesise(expr.operator.getLexeme() + expr.right.accept(this));
   }
 
   @Override
   public String visitVariableExpr(Variable expr) {
-    return expr.name.getLexeme();
+    return parenthesise(expr.name.getLexeme());
   }
 
   @Override
   public String visitExpressionStmt(Expression stmt) {
-    return stmt.expression.accept(this);
+    return parenthesise(stmt.expression.accept(this));
   }
 
   @Override
   public String visitPrintStmt(Print stmt) {
-    return "print: " + stmt.expression.accept(this);
+    return parenthesise("print: " + stmt.expression.accept(this));
   }
 
   @Override
   public String visitVarStmt(Var stmt) {
-    return stmt.name.getLexeme() + " = " + stmt.initializer.accept(this);
+    return parenthesise(stmt.name.getLexeme() + " = " + stmt.initializer.accept(this));
+  }
+
+  private String parenthesise(String str) {
+    return "(" + str + ")";
   }
 }

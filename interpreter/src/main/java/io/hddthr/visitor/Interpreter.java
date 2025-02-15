@@ -1,24 +1,34 @@
 package io.hddthr.visitor;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import io.hddthr.exception.InterpreterException;
 import io.hddthr.model.Expr;
+import io.hddthr.model.Expr.Assign;
 import io.hddthr.model.Expr.Binary;
 import io.hddthr.model.Expr.Grouping;
 import io.hddthr.model.Expr.Literal;
 import io.hddthr.model.Expr.Unary;
 import io.hddthr.model.Expr.Variable;
+import io.hddthr.model.Stmt.Block;
 import io.hddthr.model.Stmt.Expression;
 import io.hddthr.model.Stmt.Print;
 import io.hddthr.model.Stmt.Var;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 public class Interpreter implements Visitor<Object> {
 
-  private final Environment environment = new Environment();
+  private Environment environment = new Environment();
+
+  @Override
+  public Object visitAssignExpr(Assign expr) {
+    return environment.assign(expr.name.getLexeme(), evaluate(expr.value));
+  }
 
   @Override
   public Object visitBinaryExpr(Binary expr) {
@@ -63,10 +73,6 @@ public class Interpreter implements Visitor<Object> {
         return !left.equals(right);
     }
     return null;
-  }
-
-  private Object evaluate(Expr expr) {
-    return expr.accept(this);
   }
 
   private void assertNumber(Object... objs) {
@@ -135,6 +141,18 @@ public class Interpreter implements Visitor<Object> {
     return null;
   }
 
+  @Override
+  public Object visitBlockStmt(Block stmt) {
+    Environment previous = this.environment;
+    this.environment = new Environment(previous);
+    try {
+      stmt.statements.forEach(s -> s.accept(this));
+    } finally {
+      this.environment = previous;
+    }
+    return null;
+  }
+
   private String stringify(Object value) {
     if (value == null) {
       return "nil";
@@ -152,18 +170,28 @@ public class Interpreter implements Visitor<Object> {
     return true;
   }
 
+  private Object evaluate(Expr expr) {
+    return expr.accept(this);
+  }
+
+  @AllArgsConstructor
+  @NoArgsConstructor
   static class Environment {
 
     private final Map<String, Object> map = new HashMap<>();
+    private Environment parent;
 
     public void define(String name, Object value) {
       map.put(name, value);
     }
 
-    public void assign(String name, Object value) {
+    public Object assign(String name, Object value) {
       if (map.containsKey(name)) {
         map.put(name, value);
-        return;
+        return value;
+      }
+      if (nonNull(parent)) {
+        return parent.assign(name, value);
       }
       throw new InterpreterException("Undefined variable '" + name + "'.");
     }
@@ -171,6 +199,9 @@ public class Interpreter implements Visitor<Object> {
     public Object get(String name) {
       if (map.containsKey(name)) {
         return map.get(name);
+      }
+      if (nonNull(parent)) {
+        return parent.get(name);
       }
       throw new InterpreterException("Undefined variable '" + name + "'.");
     }

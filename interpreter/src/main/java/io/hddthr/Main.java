@@ -59,14 +59,16 @@ public class Main {
       try {
         run(line);
       } catch (TokenizerException | InterpreterException e) {
-        System.err.format("%s: %s\n", e.getClass().getSimpleName(), e.getMessage());
+        System.out.format(formatErrorText("%s:\n%s\n"), e.getClass().getSimpleName(),
+            e.getMessage());
       } catch (ParserException e) {
         List<ParsingError> errors = e.getErrors();
-        System.err.format("Parser errors:%s", IntStream.range(1, errors.size() + 1).mapToObj(i -> {
-          ParsingError error = errors.get(i - 1);
-          return String.format("%d: line %d, lexeme \"%s\",  %s\n", i, error.token().getLine(),
-              error.token().getLexeme(), error.message());
-        }).reduce("", (a, b) -> a + "\n" + b));
+        System.out.format(formatErrorText("Parser errors:%s"),
+            IntStream.range(1, errors.size() + 1).mapToObj(i -> {
+              ParsingError error = errors.get(i - 1);
+              return String.format("%d: line %d, lexeme \"%s\",  %s\n", i, error.token().getLine(),
+                  error.token().getLexeme(), error.message());
+            }).reduce("", (a, b) -> a + "\n" + b));
       }
     }
   }
@@ -83,5 +85,9 @@ public class Main {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static String formatErrorText(String str) {
+    return String.format("\u001B[31m%s\u001B[0m", str);
   }
 }

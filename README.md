@@ -9,16 +9,20 @@ parenthesis primary
 ```
 
 ```
-program        → decleration* EOF ;
+program        → decleration* EOF 
 decleration    → varDecl
-               | statement ;
-varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ; 
+               | statement 
+varDecl        → "var" IDENTIFIER ( "=" expression )? ";" 
 statement      → exprStmt
-               | printStmt ;
-exprStmt       → expression ";" ;
-printStmt      → "print" expression ";" ;
+               | printStmt
+               | block
+block          → "{" declaration* "}"
+exprStmt       → expression ";"
+printStmt      → "print" expression ";"
 
-expression ->  equality
+expression     → assignment
+assignment     → IDENTIFIER "=" assignment
+               | equality
 equality   ->  comparison ( ("==","!=") comparison )*
 comparison ->  term       ( (">","<","<=",">=") term )*
 term       ->  factor     ( ("-","+") factor )* 
